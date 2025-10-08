@@ -40,7 +40,6 @@ public class MessageController {
         msg.setType("email");
         msg.setBody(req.getBody());
         msg.setAttachments(req.getAttachments());
-        msg.setType(req.getType().toLowerCase());
         msg.setTimestamp(req.getTimestamp());
         return service.saveMessage(msg);
     }
