@@ -30,6 +30,12 @@ public class ConversationService {
         this.emailProvider = email;
     }
 
+    private Conversation findOrCreateConversation(String from, String to) {
+        return conversationRepo.findByParticipantAAndParticipantB(from, to)
+                .or(() -> conversationRepo.findByParticipantBAndParticipantA(to, from))
+                .orElseGet(() -> conversationRepo.save(new Conversation(from, to)));
+    }
+
     public Message sendMessage(MessageRequest req) throws Exception {
         Message msg = new Message();
         msg.setFromAddress(req.getFrom());
@@ -39,12 +45,7 @@ public class ConversationService {
         msg.setAttachments(req.getAttachments());
         msg.setTimestamp(req.getTimestamp() != null ? req.getTimestamp() : Instant.now());
 
-        Conversation conv = conversationRepo.findByParticipantAAndParticipantB(req.getFrom(), req.getTo())
-                .or(() -> conversationRepo.findByParticipantBAndParticipantA(req.getFrom(), req.getTo()))
-                .orElseGet(() -> {
-                    Conversation newConv = new Conversation(req.getFrom(), req.getTo());
-                    return conversationRepo.save(newConv);
-                });
+        Conversation conv = findOrCreateConversation(req.getFrom(), req.getTo());
 
         conv.addMessage(msg);
         conversationRepo.save(conv);
@@ -68,16 +69,10 @@ public class ConversationService {
         msg.setProviderId(req.getMessagingProviderId());
         msg.setTimestamp(req.getTimestamp() != null ? req.getTimestamp() : Instant.now());
 
-        Conversation conv = conversationRepo.findByParticipantAAndParticipantB(req.getFrom(), req.getTo())
-                .or(() -> conversationRepo.findByParticipantBAndParticipantA(req.getFrom(), req.getTo()))
-                .orElseGet(() -> {
-                    Conversation newConv = new Conversation(req.getFrom(), req.getTo());
-                    return conversationRepo.save(newConv);
-                });
+        Conversation conv = findOrCreateConversation(req.getFrom(), req.getTo());
 
         conv.addMessage(msg);
         conversationRepo.save(conv);
-
-        return messageRepo.save(msg);
+        return msg;
     }
 }

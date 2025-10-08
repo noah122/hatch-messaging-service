@@ -20,11 +20,10 @@ public class MessageController {
 
     @PostMapping("/sms")
     public Message sendSmsOrMms(@RequestBody MessageRequest req) {
-        //message.setType(message.getType().toLowerCase()); // sms or mms
         Message msg = new Message();
         msg.setFromAddress(req.getFrom());
         msg.setToAddress(req.getTo());
-        msg.setType("email");
+        msg.setType(req.getType().toLowerCase());
         msg.setBody(req.getBody());
         msg.setAttachments(req.getAttachments());
         msg.setType(req.getType().toLowerCase());
